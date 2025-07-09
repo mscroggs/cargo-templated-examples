@@ -107,9 +107,9 @@ fn main() -> ExitCode {
 
     // Run examples
     for c in &examples {
-        println!("");
+        println!();
         println!("RUNNING cargo {c}");
-        println!("");
+        println!();
         if run_example(c).is_err() {
             exit_code = ExitCode::FAILURE;
         }
