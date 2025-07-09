@@ -23,3 +23,9 @@ jobs:
         run: |
           cargo fmt -- --check
           cargo clippy --features "strict" -- -D warnings
+
+      - name: Rust style checks on example-crate
+        run: |
+          cd example-crate
+          cargo fmt -- --check
+          cargo clippy -- -D warnings
