@@ -11,3 +11,6 @@ readme = "../README.md"
 
 [dependencies]
 mpi = "0.8.*"
+
+[package.metadata.templated_examples]
+"NPROCESSES" = ["2", "4"]
