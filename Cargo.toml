@@ -1,0 +1,20 @@
+[features]
+strict = []
+
+[package]
+name = "cargo-templated-examples"
+version = "0.1.0"
+edition = "2024"
+authors = ["Matthew Scroggs <rust@mscroggs.co.uk>"]
+description = "Cargo extension for templated running of example."
+license = "MIT"
+homepage = "https://github.com/mscroggs/cargo-templated-examples"
+repository = "https://github.com/mscroggs/cargo-templated-examples"
+readme = "README.md"
+keywords = ["examples", "cargo"]
+categories = ["development-tools::cargo-plugins"]
+
+[dependencies]
+
+[lints.clippy]
+wildcard_imports = "forbid"
