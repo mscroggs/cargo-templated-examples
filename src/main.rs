@@ -113,3 +113,20 @@ fn main() -> ExitCode {
     }
     exit_code
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_load_args() {
+        assert_eq!(load_args_from_cargo_toml().len(), 0);
+    }
+
+    #[test]
+    fn test_get_example_command() {
+        let file = Path::new("example-crate/examples/parallel.rs");
+        let command = get_example_command(file);
+        assert_eq!(command, "mpirun -n {{NPROCESSES}} --example parallel");
+    }
+}
