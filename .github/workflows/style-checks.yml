@@ -24,6 +24,10 @@ jobs:
           cargo fmt -- --check
           cargo clippy --features "strict" -- -D warnings
 
+      - name: Set up MPI
+        uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: mpich
       - name: Rust style checks on example-crate
         run: |
           cd example-crate
