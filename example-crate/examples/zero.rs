@@ -1,5 +1,3 @@
-//? run
-
 use example::i;
 
 fn main() {
