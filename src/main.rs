@@ -13,7 +13,7 @@ use std::path::Path;
 use std::process::Command;
 use std::process::ExitCode;
 
-/// Load template arguments from the package.metadata.templated_examples section of Cargo.toml
+/// Load template arguments from the package.metadata.templated-examples section of Cargo.toml
 fn load_args_from_cargo_toml() -> HashMap<String, Vec<String>> {
     let cargo_toml =
         Manifest::from_str(&fs::read_to_string("Cargo.toml").expect("Cannot read Cargo.toml"))
@@ -21,7 +21,7 @@ fn load_args_from_cargo_toml() -> HashMap<String, Vec<String>> {
 
     if let Some(p) = cargo_toml.package
         && let Some(m) = p.metadata
-        && let Some(e) = m.get("templated_examples")
+        && let Some(e) = m.get("templated-examples")
     {
         e.as_table()
             .unwrap()
