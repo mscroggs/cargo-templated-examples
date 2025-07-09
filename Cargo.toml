@@ -15,6 +15,7 @@ keywords = ["examples", "cargo"]
 categories = ["development-tools::cargo-plugins"]
 
 [dependencies]
+cargo_toml = "0.22"
 
 [lints.clippy]
 wildcard_imports = "forbid"
