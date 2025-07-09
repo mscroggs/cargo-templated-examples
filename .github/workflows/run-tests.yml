@@ -35,6 +35,12 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust-version }}
+      - name: Set up MPI
+        uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: mpich
+      - name: Install cargo-mpirun
+        run: cargo install cargo-mpirun
       - uses: actions/checkout@v4
       - name: Install cargo-templated-examples
         run: cargo install --path .
