@@ -149,6 +149,6 @@ mod test {
     fn test_get_example_command() {
         let file = Path::new("example-crate/examples/parallel.rs");
         let command = get_example_command(file);
-        assert_eq!(command, "mpirun -n {{NPROCESSES}} --example parallel");
+        assert_eq!(command, "cargo mpirun -n {{NPROCESSES}} --example parallel --release");
     }
 }
