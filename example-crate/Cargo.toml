@@ -17,4 +17,4 @@ readme = "../README.md"
 mpi = "0.8.*"
 
 [package.metadata.templated-examples]
-"NPROCESSES" = ["2", "4"]
+NPROCESSES = ["2", "4"]
