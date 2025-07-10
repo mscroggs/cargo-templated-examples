@@ -50,7 +50,7 @@ cargo templated-example NPROCESSES 1,5
 ```
 would lead to the variable `NPROCESSES` taking the values `1` and `5`.
 
-If values are passes in both ways, thoese passed via the command line will be used.
+If values are passed in both ways, thoese passed via the command line will be used.
 
 ### Example
 An example of the usage of cargo-templated-example can be found in the 
