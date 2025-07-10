@@ -7,14 +7,15 @@
 #![warn(missing_docs)]
 
 use cargo_toml::Manifest;
-use std::collections::HashMap;
-use std::fs;
-use std::path::Path;
-use std::process::Command;
-use std::process::ExitCode;
+use std::{
+    collections::HashMap,
+    env, fs,
+    path::Path,
+    process::{Command, ExitCode},
+};
 
 /// Load template arguments from the package.metadata.templated-examples section of Cargo.toml
-fn load_args_from_cargo_toml() -> HashMap<String, Vec<String>> {
+fn load_cargo_toml_args(args: &mut HashMap<String, Vec<String>>) {
     let cargo_toml =
         Manifest::from_str(&fs::read_to_string("Cargo.toml").expect("Cannot read Cargo.toml"))
             .unwrap();
@@ -23,22 +24,31 @@ fn load_args_from_cargo_toml() -> HashMap<String, Vec<String>> {
         && let Some(m) = p.metadata
         && let Some(e) = m.get("templated-examples")
     {
-        e.as_table()
-            .unwrap()
-            .iter()
-            .map(|(i, j)| {
-                (
-                    i.clone(),
-                    j.as_array()
-                        .unwrap()
-                        .iter()
-                        .map(|k| String::from(k.as_str().unwrap()))
-                        .collect::<Vec<_>>(),
-                )
-            })
-            .collect::<HashMap<_, _>>()
-    } else {
-        HashMap::new()
+        for (i, j) in e.as_table().unwrap() {
+            args.insert(
+                i.clone(),
+                j.as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|value| String::from(value.as_str().unwrap()))
+                    .collect::<Vec<_>>(),
+            );
+        }
+    }
+}
+
+/// Load template arguments input via the command line
+fn load_command_line_args(args: &mut HashMap<String, Vec<String>>) {
+    let input_args = env::args().collect::<Vec<_>>();
+    assert_eq!(input_args[1], "templated-examples");
+    for i in 1..input_args.len() / 2 {
+        args.insert(
+            input_args[2 * i].clone(),
+            input_args[2 * i + 1]
+                .split(",")
+                .map(String::from)
+                .collect::<Vec<_>>(),
+        );
     }
 }
 
@@ -89,7 +99,10 @@ fn main() -> ExitCode {
     }
 
     // Substitute all template arguments
-    let template_args = load_args_from_cargo_toml();
+    let mut template_args = HashMap::new();
+    load_cargo_toml_args(&mut template_args);
+    load_command_line_args(&mut template_args);
+
     for (a, options) in &template_args {
         let mut new_examples = vec![];
         let a = format!("{{{{{a}}}}}");
