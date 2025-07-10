@@ -68,10 +68,10 @@ fn get_example_command(file: &Path) -> String {
         .lines()
     {
         if let Some(c) = line.strip_prefix("//? ") {
-            return format!("{c} --example {file_stem}");
+            return format!("cargo {c} --example {file_stem} --release");
         }
     }
-    format!("run --example {file_stem}")
+    format!("run --example {file_stem} --release")
 }
 
 /// Run an example
@@ -85,7 +85,7 @@ fn run_example(example: &str) -> Result<(), &str> {
     let mut shell = Command::new("sh");
     #[cfg(not(target_os = "windows"))]
     shell.arg("-c");
-    shell.arg(format!("cargo {example}"));
+    shell.arg(example);
 
     let mut child = shell.spawn().expect("Error initialising example run");
     match child.wait().expect("Error running example").code() {
@@ -132,7 +132,7 @@ fn main() -> ExitCode {
     // Run examples
     for c in &examples {
         println!();
-        println!("RUNNING cargo {c}");
+        println!("RUNNING {c}");
         println!();
         if run_example(c).is_err() {
             exit_code = ExitCode::FAILURE;
