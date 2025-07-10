@@ -10,3 +10,8 @@ pub fn print_mpi_info<C: Communicator>(comm: &C) {
 pub fn i() -> i32 {
     if cfg!(feature = "one") { 1 } else { 0 }
 }
+
+/// Get a two or zero
+pub fn j() -> i32 {
+    if cfg!(feature = "two") { 2 } else { 0 }
+}
