@@ -71,7 +71,7 @@ fn get_example_command(file: &Path) -> String {
             return format!("cargo {c} --example {file_stem} --release");
         }
     }
-    format!("run --example {file_stem} --release")
+    format!("cargo run --example {file_stem} --release")
 }
 
 /// Run an example
