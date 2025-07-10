@@ -1,5 +1,6 @@
 [features]
 one = []
+two = []
 
 [package]
 name = "example"
