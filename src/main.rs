@@ -18,19 +18,23 @@ use std::{
 fn load_cargo_toml_args(args: &mut HashMap<String, Vec<String>>) {
     let cargo_toml =
         Manifest::from_str(&fs::read_to_string("Cargo.toml").expect("Cannot read Cargo.toml"))
-            .unwrap();
+            .expect("Could not parse Cargo.toml");
 
     if let Some(p) = cargo_toml.package
         && let Some(m) = p.metadata
         && let Some(e) = m.get("templated-examples")
     {
-        for (i, j) in e.as_table().unwrap() {
+        for (i, j) in e
+            .as_table()
+            .expect("Could not parse package.metadata.templated-examples")
+        {
             args.insert(
                 i.clone(),
                 j.as_array()
-                    .unwrap()
+                    .expect("Values in package.metadata.templated-examples must be arrays of strings")
                     .iter()
-                    .map(|value| String::from(value.as_str().unwrap()))
+                    .map(|value| String::from(value.as_str()
+                    .expect("Values in package.metadata.templated-examples must be arrays of strings")))
                     .collect::<Vec<_>>(),
             );
         }
@@ -54,8 +58,15 @@ fn load_command_line_args(args: &mut HashMap<String, Vec<String>>) {
 
 /// Get example command from a file
 fn get_example_command(file: &Path) -> String {
-    let file_stem = file.file_stem().unwrap().to_str().unwrap();
-    for line in fs::read_to_string(file).unwrap().lines() {
+    let file_stem = file
+        .file_stem()
+        .expect("Error parsing file name")
+        .to_str()
+        .expect("Error parsing file name");
+    for line in fs::read_to_string(file)
+        .expect("Error reading example file")
+        .lines()
+    {
         if let Some(c) = line.strip_prefix("//? ") {
             return format!("{c} --example {file_stem}");
         }
@@ -76,8 +87,8 @@ fn run_example(example: &str) -> Result<(), &str> {
     shell.arg("-c");
     shell.arg(format!("cargo {example}"));
 
-    let mut child = shell.spawn().unwrap();
-    match child.wait().unwrap().code() {
+    let mut child = shell.spawn().expect("Error initialising example run");
+    match child.wait().expect("Error running example").code() {
         Some(0) => Ok(()),
         Some(_) => Err("Example run failed"),
         None => Err("Example run failed"),
@@ -89,8 +100,8 @@ fn main() -> ExitCode {
 
     // Load all template examples from files
     let mut examples = vec![];
-    for file in fs::read_dir("examples").unwrap() {
-        let file = file.unwrap().path();
+    for file in fs::read_dir("examples").expect("Could not find examples directory") {
+        let file = file.expect("Error reading examples directory").path();
         if let Some(e) = file.extension()
             && e == "rs"
         {
