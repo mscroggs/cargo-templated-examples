@@ -52,6 +52,16 @@ would lead to the variable `NPROCESSES` taking the values `1` and `5`.
 
 If values are passed in both ways, thoese passed via the command line will be used.
 
+### Build type
+The build type (debug or release) can be set by setting a value for `build` option in the
+`package.metadata.templated-examples` section of Cargo.toml. For example, adding
+```toml
+[package.metadata.templated-examples]
+build = "debug"
+```
+will set the default build type to debug. If this value is not set, the default build type
+will be release.
+
 ### Example
 An example of the usage of cargo-templated-example can be found in the 
 [example-crate](https://github.com/mscroggs/cargo-templated-examples/tree/main/example-crate)
