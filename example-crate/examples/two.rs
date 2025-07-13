@@ -1,4 +1,4 @@
-//? run --features "{{FEATURE}}"
+//? run --features "{{FEATURE}}" --release
 
 use example::j;
 

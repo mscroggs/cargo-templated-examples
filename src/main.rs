@@ -28,17 +28,41 @@ fn load_cargo_toml_args(args: &mut HashMap<String, Vec<String>>) {
             .as_table()
             .expect("Could not parse package.metadata.templated-examples")
         {
-            args.insert(
-                i.clone(),
-                j.as_array()
-                    .expect("Values in package.metadata.templated-examples must be arrays of strings")
-                    .iter()
-                    .map(|value| String::from(value.as_str()
-                    .expect("Values in package.metadata.templated-examples must be arrays of strings")))
-                    .collect::<Vec<_>>(),
-            );
+            if i != "build" {
+                args.insert(
+                    i.clone(),
+                    j.as_array()
+                        .expect("Values in package.metadata.templated-examples must be arrays of strings")
+                        .iter()
+                        .map(|value| String::from(value.as_str()
+                        .expect("Values in package.metadata.templated-examples must be arrays of strings")))
+                        .collect::<Vec<_>>(),
+                );
+            }
         }
     }
+}
+
+/// Get default build type
+fn get_default_build() -> String {
+    let cargo_toml =
+        Manifest::from_str(&fs::read_to_string("Cargo.toml").expect("Cannot read Cargo.toml"))
+            .expect("Could not parse Cargo.toml");
+
+    if let Some(p) = cargo_toml.package
+        && let Some(m) = p.metadata
+        && let Some(e) = m.get("templated-examples")
+    {
+        for (i, j) in e
+            .as_table()
+            .expect("Could not parse package.metadata.templated-examples")
+        {
+            if i == "build" {
+                return String::from(j.as_str().expect("Build type must be a string"));
+            }
+        }
+    }
+    String::from("release")
 }
 
 /// Load template arguments input via the command line
@@ -56,22 +80,37 @@ fn load_command_line_args(args: &mut HashMap<String, Vec<String>>) {
     }
 }
 
+/// Check if a command includes a build type
+fn includes_build(command: &str) -> bool {
+    command.contains("--release") || command.contains("--profile")
+}
+
 /// Get example command from a file
-fn get_example_command(file: &Path) -> String {
+fn get_example_command(file: &Path, default_build: &str) -> String {
     let file_stem = file
         .file_stem()
         .expect("Error parsing file name")
         .to_str()
         .expect("Error parsing file name");
+    let mut command = format!("cargo run --example {file_stem}");
     for line in fs::read_to_string(file)
         .expect("Error reading example file")
         .lines()
     {
         if let Some(c) = line.strip_prefix("//? ") {
-            return format!("cargo {c} --example {file_stem} --release");
+            command = format!("cargo {c} --example {file_stem}");
+            break;
         }
     }
-    format!("cargo run --example {file_stem} --release")
+    if includes_build(&command) {
+        command
+    } else {
+        match default_build {
+            "release" => format!("{command} --release"),
+            "debug" => command,
+            _ => format!("{command} --profile {default_build}"),
+        }
+    }
 }
 
 /// Run an example
@@ -98,6 +137,8 @@ fn run_example(example: &str) -> Result<(), &str> {
 fn main() -> ExitCode {
     let mut exit_code = ExitCode::SUCCESS;
 
+    let default_build = get_default_build();
+
     // Load all template examples from files
     let mut examples = vec![];
     for file in fs::read_dir("examples").expect("Could not find examples directory") {
@@ -105,7 +146,7 @@ fn main() -> ExitCode {
         if let Some(e) = file.extension()
             && e == "rs"
         {
-            examples.push(get_example_command(&file));
+            examples.push(get_example_command(&file, &default_build));
         }
     }
 
