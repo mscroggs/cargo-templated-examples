@@ -18,3 +18,4 @@ mpi = "0.8.*"
 
 [package.metadata.templated-examples]
 NPROCESSES = ["2", "4"]
+build = "debug"
