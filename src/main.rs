@@ -48,6 +48,28 @@ struct CargoCommand {
     build: BuildType,
 }
 
+/// If a string starts with a quote, parse what's inside the quotes
+fn parse_string_if_quoted(s: &str) -> String {
+    if s.starts_with("\"") || s.starts_with("'") {
+        assert_eq!(s[0..1], s[s.len() - 1..s.len()]);
+        let mut s = s[1..s.len() - 1].chars();
+        let mut output = String::new();
+        while let Some(c) = s.next() {
+            if c == '\\' {
+                output = format!(
+                    "{output}{}",
+                    s.next().expect("String cannot end with a backslash")
+                );
+            } else {
+                output = format!("{output}{c}");
+            }
+        }
+        output
+    } else {
+        s.to_string()
+    }
+}
+
 impl CargoCommand {
     /// Convert command to string
     fn to_string(&self, default_build: &BuildType) -> String {
@@ -140,18 +162,10 @@ impl CargoCommand {
                 }
                 "--features" => {
                     // TODO: tidy this up
-                    let feature_list = c.next().expect("Features cannot be blank");
-                    features = if feature_list.starts_with("\"") || feature_list.starts_with("'") {
-                        assert!(
-                            feature_list[0..1]
-                                == feature_list[feature_list.len() - 1..feature_list.len()]
-                        );
-                        feature_list[1..feature_list.len() - 1].split(",")
-                    } else {
-                        feature_list.split(",")
-                    }
-                    .map(String::from)
-                    .collect::<Vec<_>>();
+                    features = parse_string_if_quoted(c.next().expect("Features cannot be blank"))
+                        .split(",")
+                        .map(String::from)
+                        .collect::<Vec<_>>();
                 }
                 _ => {
                     args.push((
@@ -459,5 +473,13 @@ mod test {
         let mut c = CargoCommand::from_str("run --profile build", "test");
         c.set_build_type(&BuildType::Debug);
         assert_eq!(c.build, BuildType::Profile(String::from("build")));
+    }
+
+    #[test]
+    fn test_parse_if_quoted() {
+        assert_eq!(parse_string_if_quoted("\"test\""), "test");
+        assert_eq!(parse_string_if_quoted("\"test\\\\\""), "test\\");
+        assert_eq!(parse_string_if_quoted("\"test\\\"\""), "test\"");
+        assert_eq!(parse_string_if_quoted("test\\\""), "test\\\"");
     }
 }
