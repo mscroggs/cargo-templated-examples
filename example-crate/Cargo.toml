@@ -25,7 +25,16 @@ name = "debug"
 
 [[example]]
 name = "one"
+
+[[example]]
+name = "one_required_feature"
 required-features = ["one"]
+
+[[example]]
+name = "one_set_in_cargo"
+
+[package.metadata.example.one_set_in_cargo.templated-examples]
+command = "run --features \"one\""
 
 [[example]]
 name = "parallel"
