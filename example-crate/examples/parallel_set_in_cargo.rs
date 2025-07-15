@@ -1,5 +1,3 @@
-//? mpirun -n {{NPROCESSES}}
-
 use example::print_mpi_info;
 use mpi::{environment::Universe, topology::Communicator};
 
