@@ -1,4 +1,7 @@
 # cargo-templated-examples
+[![crates.io](https://img.shields.io/crates/v/cargo-templated-examples)](https://crates.io/crates/cargo-templated-examples)
+[![docs.rs](https://img.shields.io/docsrs/cargo-templated-examples?label=docs.rs)](https://docs.rs/cargo-templated-examples/latest/cargo-templated-examples/)
+
 cargo-templated-examples is a cargo extension that allows you to run all examples in
 your crate with custom templated run command.
 
