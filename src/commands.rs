@@ -1,9 +1,6 @@
 //! Cargo commands
 
-use crate::cargo_toml;
 use crate::parsing::parse_string_if_quoted;
-use crate::rust_file;
-use std::path::Path;
 
 /// A build type
 #[derive(Clone, Debug, PartialEq)]
@@ -52,7 +49,7 @@ impl CargoCommand {
     }
 
     /// Convert command to string
-    pub fn to_string(&self, default_build: &BuildType) -> String {
+    pub fn as_string(&self) -> String {
         let mut c = format!("cargo {}", self.run);
         for (key, value) in &self.args {
             c = format!("{c} {key} {value}");
@@ -61,10 +58,7 @@ impl CargoCommand {
         if !self.features.is_empty() {
             c = format!("{c} --features \"{}\"", self.features.join(","));
         }
-        match match &self.build {
-            BuildType::Default => default_build,
-            x => x,
-        } {
+        match &self.build {
             BuildType::Debug => {}
             BuildType::Release => {
                 c = format!("{c} --release");
@@ -165,48 +159,9 @@ impl CargoCommand {
     }
 }
 
-/// Get example command for a file
-pub fn get_example_command(file: &Path) -> CargoCommand {
-    let file_stem = file
-        .file_stem()
-        .expect("Error parsing file name")
-        .to_str()
-        .expect("Error parsing file name");
-
-    let file_command = rust_file::load_command(file).map(|c| CargoCommand::from_str(&c, file_stem));
-    let cargo_toml_command =
-        cargo_toml::load_command(file_stem).map(|c| CargoCommand::from_str(&c, file_stem));
-
-    // Return command
-    if let Some(c) = file_command {
-        if let Some(c2) = cargo_toml_command
-            && c != c2
-        {
-            panic!("Commands set in file and Cargo.toml do not match");
-        }
-        c
-    } else if let Some(c) = cargo_toml_command {
-        c
-    } else {
-        CargoCommand::new(String::from(file_stem))
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    fn test_get_example_command() {
-        let file = Path::new("example-crate/examples/parallel.rs");
-        let command = get_example_command(file).to_string(&BuildType::Release);
-        assert_eq!(
-            command,
-            "cargo mpirun -n {{NPROCESSES}} --example parallel --release"
-        );
-        let command = get_example_command(file).to_string(&BuildType::Debug);
-        assert_eq!(command, "cargo mpirun -n {{NPROCESSES}} --example parallel");
-    }
 
     #[test]
     fn test_from_str_features() {

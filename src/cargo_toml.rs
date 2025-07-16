@@ -1,6 +1,6 @@
 //! Functions to read information from Cargo.toml
 
-use crate::BuildType;
+use crate::{BuildType, CargoCommand};
 use cargo_toml::Manifest;
 use std::{collections::HashMap, fs};
 
@@ -64,7 +64,7 @@ pub fn load_required_features(eg: &str) -> Vec<String> {
 }
 
 /// Load command from Cargo.toml section [package.metedata.example.{{eg}}.templated-examples]
-pub fn load_command(eg: &str) -> Option<String> {
+pub fn load_command(eg: &str) -> Option<CargoCommand> {
     if let Some(p) = cargo_toml().package
         && let Some(m) = p.metadata
         && let Some(e) = m.get("example")
@@ -72,7 +72,28 @@ pub fn load_command(eg: &str) -> Option<String> {
         && let Some(d) = ex.get("templated-examples")
         && let Some(c) = d.get("command")
     {
-        Some(String::from(c.as_str().expect("Command must be a string")))
+        let mut cmd = CargoCommand::from_str(c.as_str().expect("Command must be a string"), eg);
+        if let Some(b) = load_build(eg) {
+            cmd.set_build_type(&b);
+        }
+        Some(cmd)
+    } else {
+        None
+    }
+}
+
+/// Load build from Cargo.toml section [package.metedata.example.{{eg}}.templated-examples]
+pub fn load_build(eg: &str) -> Option<BuildType> {
+    if let Some(p) = cargo_toml().package
+        && let Some(m) = p.metadata
+        && let Some(e) = m.get("example")
+        && let Some(ex) = e.get(eg)
+        && let Some(d) = ex.get("templated-examples")
+        && let Some(c) = d.get("build")
+    {
+        Some(BuildType::from_str(
+            c.as_str().expect("Command must be a string"),
+        ))
     } else {
         None
     }

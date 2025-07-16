@@ -11,15 +11,33 @@ mod command_line;
 mod commands;
 mod parsing;
 mod rust_file;
-use cargo_toml::{get_default_build, load_args as cargo_toml_load_args};
-use command_line::load_args as command_line_load_args;
-use commands::{BuildType, CargoCommand, get_example_command};
+use commands::{BuildType, CargoCommand};
 
 use std::{
     collections::HashMap,
     fs,
     process::{Command, ExitCode},
 };
+
+/// Get example command for a file
+fn get_example_command(eg: &str) -> CargoCommand {
+    let file_command = rust_file::load_command(eg);
+    let cargo_toml_command = cargo_toml::load_command(eg);
+
+    // Return command
+    if let Some(c) = file_command {
+        if let Some(c2) = cargo_toml_command
+            && c != c2
+        {
+            panic!("Commands set in file and Cargo.toml do not match");
+        }
+        c
+    } else if let Some(c) = cargo_toml_command {
+        c
+    } else {
+        CargoCommand::new(String::from(eg))
+    }
+}
 
 /// Run an example
 fn run_example(example: &str) -> Result<(), &str> {
@@ -45,7 +63,7 @@ fn run_example(example: &str) -> Result<(), &str> {
 fn main() -> ExitCode {
     let mut exit_code = ExitCode::SUCCESS;
 
-    let default_build = get_default_build();
+    let default_build = cargo_toml::get_default_build();
 
     // Load all template examples from files
     let mut examples = vec![];
@@ -54,15 +72,23 @@ fn main() -> ExitCode {
         if let Some(e) = file.extension()
             && e == "rs"
         {
-            let c = get_example_command(&file);
-            examples.push(c.to_string(&default_build));
+            let file_stem = file
+                .file_stem()
+                .expect("Error parsing file name")
+                .to_str()
+                .expect("Error parsing file name");
+
+            let mut c = get_example_command(file_stem);
+            c.set_default_build_type(&default_build);
+            c.set_required_features(&cargo_toml::load_required_features(file_stem));
+            examples.push(c.as_string());
         }
     }
 
     // Substitute all template arguments
     let mut template_args = HashMap::new();
-    cargo_toml_load_args(&mut template_args);
-    command_line_load_args(&mut template_args);
+    cargo_toml::load_args(&mut template_args);
+    command_line::load_args(&mut template_args);
 
     for (a, options) in &template_args {
         let mut new_examples = vec![];
