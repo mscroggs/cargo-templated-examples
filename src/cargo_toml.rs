@@ -77,7 +77,9 @@ pub fn load_command(eg: &str) -> Option<CargoCommand> {
             CargoCommand::new(String::from(eg))
         };
         if let Some(b) = d.get("build") {
-            cmd.set_build_type(&BuildType::from_str(b.as_str().expect("Command must be a string")));
+            cmd.set_build_type(&BuildType::from_str(
+                b.as_str().expect("Command must be a string"),
+            ));
         }
         Some(cmd)
     } else {
