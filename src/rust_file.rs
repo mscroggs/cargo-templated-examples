@@ -1,4 +1,4 @@
-//! Functions to read information from Cargo.toml
+//! Functions to read information from a rust file
 
 use std::{fs, path::Path};
 

@@ -1,4 +1,4 @@
-//! Cargo command classes
+//! Cargo commands
 
 use crate::cargo_toml;
 use crate::parsing::parse_string_if_quoted;
@@ -40,6 +40,17 @@ pub struct CargoCommand {
 }
 
 impl CargoCommand {
+    /// Create new
+    pub fn new(example_name: String) -> CargoCommand {
+        CargoCommand {
+            run: String::from("run"),
+            example_name,
+            args: vec![],
+            features: vec![],
+            build: BuildType::Default,
+        }
+    }
+
     /// Convert command to string
     pub fn to_string(&self, default_build: &BuildType) -> String {
         let mut c = format!("cargo {}", self.run);
@@ -143,10 +154,10 @@ impl CargoCommand {
                 }
             }
         }
-
+        let example_name = String::from(example_name);
         CargoCommand {
             run,
-            example_name: String::from(example_name),
+            example_name,
             args,
             features,
             build,
@@ -177,13 +188,7 @@ pub fn get_example_command(file: &Path) -> CargoCommand {
     } else if let Some(c) = cargo_toml_command {
         c
     } else {
-        CargoCommand {
-            run: String::from("run"),
-            example_name: String::from(file_stem),
-            args: vec![],
-            features: vec![],
-            build: BuildType::Default,
-        }
+        CargoCommand::new(String::from(file_stem))
     }
 }
 

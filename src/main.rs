@@ -13,7 +13,7 @@ mod parsing;
 mod rust_file;
 use cargo_toml::{get_default_build, load_args as cargo_toml_load_args};
 use command_line::load_args as command_line_load_args;
-use commands::{BuildType, get_example_command};
+use commands::{BuildType, CargoCommand, get_example_command};
 
 use std::{
     collections::HashMap,
@@ -54,7 +54,8 @@ fn main() -> ExitCode {
         if let Some(e) = file.extension()
             && e == "rs"
         {
-            examples.push(get_example_command(&file).to_string(&default_build));
+            let c = get_example_command(&file);
+            examples.push(c.to_string(&default_build));
         }
     }
 
