@@ -72,13 +72,18 @@ pub fn load_command(eg: &str) -> Option<CargoCommand> {
         && let Some(d) = ex.get("templated-examples")
     {
         let mut cmd = if let Some(c) = d.get("command") {
-            CargoCommand::from_str(c.as_str().expect("Command must be a string"), eg)
+            CargoCommand::from_str(
+                c.as_str()
+                    .expect("Command must be a string for example \"{eg}\""),
+                eg,
+            )
         } else {
             CargoCommand::new(String::from(eg))
         };
         if let Some(b) = d.get("build") {
             cmd.set_build_type(&BuildType::from_str(
-                b.as_str().expect("Command must be a string"),
+                b.as_str()
+                    .expect("Command must be a string for example \"{eg}\""),
             ));
         }
         Some(cmd)

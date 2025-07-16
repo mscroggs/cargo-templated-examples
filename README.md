@@ -36,6 +36,8 @@ build = "release"
 ```
 would lead to the command `cargo mpirun --example intro_demo --release` being run.
 
+If commands are set in both places and do not match, then cargo-templated-example will panic.
+
 ### Templating
 A template variable can be included in a run command by including the variable name
 between pairs of curly braces. For example, the line

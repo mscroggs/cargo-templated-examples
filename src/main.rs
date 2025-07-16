@@ -29,7 +29,7 @@ fn get_example_command(eg: &str) -> CargoCommand {
         if let Some(c2) = cargo_toml_command
             && c != c2
         {
-            panic!("Commands set in file and Cargo.toml do not match");
+            panic!("Commands set in file and Cargo.toml do not match for example \"{eg}\"");
         }
         c
     } else if let Some(c) = cargo_toml_command {
