@@ -1,4 +1,4 @@
-//! cargo-template-examples
+//! cargo-templated-examples
 //!
 //! Install using `cargo install cargo-templated-examples`
 //!
