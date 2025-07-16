@@ -70,30 +70,16 @@ pub fn load_command(eg: &str) -> Option<CargoCommand> {
         && let Some(e) = m.get("example")
         && let Some(ex) = e.get(eg)
         && let Some(d) = ex.get("templated-examples")
-        && let Some(c) = d.get("command")
     {
-        let mut cmd = CargoCommand::from_str(c.as_str().expect("Command must be a string"), eg);
-        if let Some(b) = load_build(eg) {
-            cmd.set_build_type(&b);
+        let mut cmd = if let Some(c) = d.get("command") {
+            CargoCommand::from_str(c.as_str().expect("Command must be a string"), eg)
+        } else {
+            CargoCommand::new(String::from(eg))
+        };
+        if let Some(b) = d.get("build") {
+            cmd.set_build_type(&BuildType::from_str(b.as_str().expect("Command must be a string")));
         }
         Some(cmd)
-    } else {
-        None
-    }
-}
-
-/// Load build from Cargo.toml section [package.metedata.example.{{eg}}.templated-examples]
-pub fn load_build(eg: &str) -> Option<BuildType> {
-    if let Some(p) = cargo_toml().package
-        && let Some(m) = p.metadata
-        && let Some(e) = m.get("example")
-        && let Some(ex) = e.get(eg)
-        && let Some(d) = ex.get("templated-examples")
-        && let Some(c) = d.get("build")
-    {
-        Some(BuildType::from_str(
-            c.as_str().expect("Command must be a string"),
-        ))
     } else {
         None
     }
