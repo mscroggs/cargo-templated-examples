@@ -17,10 +17,24 @@ cargo templated-examples
 ```
 
 ### Custom commands
-A custom run command for an example can be set by adding a line starting with `//?` to the
-file. For example, the line
+A custom run command for an example can be set by either adding a line starting with `//?` to the
+example file or by adding metadata in the Cargo.toml file.
+
+To set the custom command in the example file, the cargo command should be written on a line
+starting with `//?`. For example, the line
 ```//? mpirun```
-would lead to the example being run using the command `cargo mpirun --example <EXAMPLE_NAME>`.
+to the file intro_demo.rs would lead to the example being run using the command
+`cargo mpirun --example intro_demo` (with release mode used by default).
+
+To set a command in the Cargo.toml file, a section called `[package.metadata.example.<EXAMPLE_NAME>.templated-examples]`
+should be added. This section can include values for `command` and/or `build`: `command` will set
+the cargo command to use and `build` will set the build type. For example, adding
+```toml
+[package.metadata.example.intro_demo.templated-examples]
+command = "mpirun"
+build = "release"
+```
+would lead to the command `cargo mpirun --example intro_demo --release` being run.
 
 ### Templating
 A template variable can be included in a run command by including the variable name
