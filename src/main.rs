@@ -6,110 +6,36 @@
 #![cfg_attr(feature = "strict", deny(warnings), deny(unused_crate_dependencies))]
 #![warn(missing_docs)]
 
-use cargo_toml::Manifest;
+mod cargo_toml;
+mod command_line;
+mod commands;
+mod parsing;
+mod rust_file;
+use commands::{BuildType, CargoCommand};
+
 use std::{
     collections::HashMap,
-    env, fs,
-    path::Path,
+    fs,
     process::{Command, ExitCode},
 };
 
-/// Load template arguments from the package.metadata.templated-examples section of Cargo.toml
-fn load_cargo_toml_args(args: &mut HashMap<String, Vec<String>>) {
-    let cargo_toml =
-        Manifest::from_str(&fs::read_to_string("Cargo.toml").expect("Cannot read Cargo.toml"))
-            .expect("Could not parse Cargo.toml");
+/// Get example command for a file
+fn get_example_command(eg: &str) -> CargoCommand {
+    let file_command = rust_file::load_command(eg);
+    let cargo_toml_command = cargo_toml::load_command(eg);
 
-    if let Some(p) = cargo_toml.package
-        && let Some(m) = p.metadata
-        && let Some(e) = m.get("templated-examples")
-    {
-        for (i, j) in e
-            .as_table()
-            .expect("Could not parse package.metadata.templated-examples")
+    // Return command
+    if let Some(c) = file_command {
+        if let Some(c2) = cargo_toml_command
+            && c != c2
         {
-            if i != "build" {
-                args.insert(
-                    i.clone(),
-                    j.as_array()
-                        .expect("Values in package.metadata.templated-examples must be arrays of strings")
-                        .iter()
-                        .map(|value| String::from(value.as_str()
-                        .expect("Values in package.metadata.templated-examples must be arrays of strings")))
-                        .collect::<Vec<_>>(),
-                );
-            }
+            panic!("Commands set in file and Cargo.toml do not match for example \"{eg}\"");
         }
-    }
-}
-
-/// Get default build type
-fn get_default_build() -> String {
-    let cargo_toml =
-        Manifest::from_str(&fs::read_to_string("Cargo.toml").expect("Cannot read Cargo.toml"))
-            .expect("Could not parse Cargo.toml");
-
-    if let Some(p) = cargo_toml.package
-        && let Some(m) = p.metadata
-        && let Some(e) = m.get("templated-examples")
-    {
-        for (i, j) in e
-            .as_table()
-            .expect("Could not parse package.metadata.templated-examples")
-        {
-            if i == "build" {
-                return String::from(j.as_str().expect("Build type must be a string"));
-            }
-        }
-    }
-    String::from("release")
-}
-
-/// Load template arguments input via the command line
-fn load_command_line_args(args: &mut HashMap<String, Vec<String>>) {
-    let input_args = env::args().collect::<Vec<_>>();
-    assert_eq!(input_args[1], "templated-examples");
-    for i in 1..input_args.len() / 2 {
-        args.insert(
-            input_args[2 * i].clone(),
-            input_args[2 * i + 1]
-                .split(",")
-                .map(String::from)
-                .collect::<Vec<_>>(),
-        );
-    }
-}
-
-/// Check if a command includes a build type
-fn includes_build(command: &str) -> bool {
-    command.contains("--release") || command.contains("--profile")
-}
-
-/// Get example command from a file
-fn get_example_command(file: &Path, default_build: &str) -> String {
-    let file_stem = file
-        .file_stem()
-        .expect("Error parsing file name")
-        .to_str()
-        .expect("Error parsing file name");
-    let mut command = format!("cargo run --example {file_stem}");
-    for line in fs::read_to_string(file)
-        .expect("Error reading example file")
-        .lines()
-    {
-        if let Some(c) = line.strip_prefix("//? ") {
-            command = format!("cargo {c} --example {file_stem}");
-            break;
-        }
-    }
-    if includes_build(&command) {
-        command
+        c
+    } else if let Some(c) = cargo_toml_command {
+        c
     } else {
-        match default_build {
-            "release" => format!("{command} --release"),
-            "debug" => command,
-            _ => format!("{command} --profile {default_build}"),
-        }
+        CargoCommand::new(String::from(eg))
     }
 }
 
@@ -137,7 +63,7 @@ fn run_example(example: &str) -> Result<(), &str> {
 fn main() -> ExitCode {
     let mut exit_code = ExitCode::SUCCESS;
 
-    let default_build = get_default_build();
+    let default_build = cargo_toml::get_default_build();
 
     // Load all template examples from files
     let mut examples = vec![];
@@ -146,14 +72,23 @@ fn main() -> ExitCode {
         if let Some(e) = file.extension()
             && e == "rs"
         {
-            examples.push(get_example_command(&file, &default_build));
+            let file_stem = file
+                .file_stem()
+                .expect("Error parsing file name")
+                .to_str()
+                .expect("Error parsing file name");
+
+            let mut c = get_example_command(file_stem);
+            c.set_default_build_type(&default_build);
+            c.set_required_features(&cargo_toml::load_required_features(file_stem));
+            examples.push(c.as_string());
         }
     }
 
     // Substitute all template arguments
     let mut template_args = HashMap::new();
-    load_cargo_toml_args(&mut template_args);
-    load_command_line_args(&mut template_args);
+    cargo_toml::load_args(&mut template_args);
+    command_line::load_args(&mut template_args);
 
     for (a, options) in &template_args {
         let mut new_examples = vec![];
@@ -180,21 +115,4 @@ fn main() -> ExitCode {
         }
     }
     exit_code
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_get_example_command() {
-        let file = Path::new("example-crate/examples/parallel.rs");
-        let command = get_example_command(file, "release");
-        assert_eq!(
-            command,
-            "cargo mpirun -n {{NPROCESSES}} --example parallel --release"
-        );
-        let command = get_example_command(file, "debug");
-        assert_eq!(command, "cargo mpirun -n {{NPROCESSES}} --example parallel");
-    }
 }
