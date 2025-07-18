@@ -2,17 +2,40 @@
 
 use crate::{BuildType, CargoCommand};
 use cargo_toml::Manifest;
-use std::{collections::HashMap, fs};
+use std::{
+    collections::HashMap,
+    env::current_dir,
+    fs,
+    path::{Path, PathBuf},
+};
 
-// Load Cargo.toml
-fn cargo_toml() -> Manifest {
-    Manifest::from_str(&fs::read_to_string("Cargo.toml").expect("Cannot read Cargo.toml"))
-        .expect("Could not parse Cargo.toml")
+/// Join a directory and a file name
+pub fn join(part1: &impl AsRef<Path>, part2: &str) -> PathBuf {
+    let mut out = PathBuf::from(part1.as_ref());
+    out.push(part2);
+    out
+}
+
+/// Find directory containing Cargo.toml
+pub fn find() -> PathBuf {
+    let mut dir = current_dir().expect("Cannot find current dir");
+    while !join(&dir, "Cargo.toml").exists() {
+        dir = dir.parent().expect("Cannot find Cargo.toml").to_path_buf();
+    }
+    dir
+}
+
+/// Load Cargo.toml
+fn cargo_toml(dir: &impl AsRef<Path>) -> Manifest {
+    Manifest::from_str(
+        &fs::read_to_string(join(dir, "Cargo.toml")).expect("Cannot read Cargo.toml"),
+    )
+    .expect("Could not parse Cargo.toml")
 }
 
 /// Load template arguments from the package.metadata.templated-examples section of Cargo.toml
-pub fn load_args(args: &mut HashMap<String, Vec<String>>) {
-    if let Some(p) = cargo_toml().package
+pub fn load_args(dir: &impl AsRef<Path>, args: &mut HashMap<String, Vec<String>>) {
+    if let Some(p) = cargo_toml(dir).package
         && let Some(m) = p.metadata
         && let Some(e) = m.get("templated-examples")
     {
@@ -36,8 +59,8 @@ pub fn load_args(args: &mut HashMap<String, Vec<String>>) {
 }
 
 /// Get default build type
-pub fn get_default_build() -> BuildType {
-    if let Some(p) = cargo_toml().package
+pub fn get_default_build(dir: &impl AsRef<Path>) -> BuildType {
+    if let Some(p) = cargo_toml(dir).package
         && let Some(m) = p.metadata
         && let Some(e) = m.get("templated-examples")
     {
@@ -54,8 +77,8 @@ pub fn get_default_build() -> BuildType {
 }
 
 /// Load required features for an example
-pub fn load_required_features(eg: &str) -> Vec<String> {
-    for e in cargo_toml().example {
+pub fn load_required_features(dir: &impl AsRef<Path>, eg: &str) -> Vec<String> {
+    for e in cargo_toml(dir).example {
         if Some(eg) == e.name.as_deref() {
             return e.required_features;
         }
@@ -64,8 +87,8 @@ pub fn load_required_features(eg: &str) -> Vec<String> {
 }
 
 /// Load command from Cargo.toml section [package.metedata.example.{{eg}}.templated-examples]
-pub fn load_command(eg: &str) -> Option<CargoCommand> {
-    if let Some(p) = cargo_toml().package
+pub fn load_command(dir: &impl AsRef<Path>, eg: &str) -> Option<CargoCommand> {
+    if let Some(p) = cargo_toml(dir).package
         && let Some(m) = p.metadata
         && let Some(e) = m.get("example")
         && let Some(ex) = e.get(eg)
