@@ -57,8 +57,7 @@ fn run_example(example: &str) -> Result<(), &str> {
     let mut child = shell.spawn().expect("Error initialising example run");
     match child.wait().expect("Error running example").code() {
         Some(0) => Ok(()),
-        Some(_) => Err("Example run failed"),
-        None => Err("Example run failed"),
+        _ => Err("Example run failed"),
     }
 }
 
