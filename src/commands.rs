@@ -52,19 +52,19 @@ impl CargoCommand {
     pub fn as_string(&self) -> String {
         let mut c = format!("cargo {}", self.run);
         for (key, value) in &self.args {
-            c = format!("{c} {key} {value}");
+            c.push_str(&format!(" {key} {value}"));
         }
-        c = format!("{c} --example {}", self.example_name);
+        c.push_str(&format!(" --example {}", self.example_name));
         if !self.features.is_empty() {
-            c = format!("{c} --features \"{}\"", self.features.join(","));
+            c.push_str(&format!(" --features \"{}\"", self.features.join(",")));
         }
         match &self.build {
             BuildType::Debug => {}
             BuildType::Release => {
-                c = format!("{c} --release");
+                c.push_str(" --release");
             }
             BuildType::Profile(p) => {
-                c = format!("{c} --profile {p}");
+                c.push_str(&format!(" --profile {p}"));
             }
             BuildType::Default => {
                 panic!("Cannot use default as run mode.");
