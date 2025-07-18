@@ -27,7 +27,6 @@ pub fn find() -> PathBuf {
 
 /// Load Cargo.toml
 fn cargo_toml(dir: &impl AsRef<Path>) -> Manifest {
-    println!("{:?}", join(dir, "Cargo.toml"));
     Manifest::from_str(
         &fs::read_to_string(join(dir, "Cargo.toml")).expect("Cannot read Cargo.toml"),
     )
