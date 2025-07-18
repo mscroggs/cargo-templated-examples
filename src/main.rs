@@ -11,18 +11,20 @@ mod command_line;
 mod commands;
 mod parsing;
 mod rust_file;
+use cargo_toml::join;
 use commands::{BuildType, CargoCommand};
 
 use std::{
     collections::HashMap,
     fs,
+    path::Path,
     process::{Command, ExitCode},
 };
 
 /// Get example command for a file
-fn get_example_command(eg: &str) -> CargoCommand {
-    let file_command = rust_file::load_command(eg);
-    let cargo_toml_command = cargo_toml::load_command(eg);
+fn get_example_command(dir: &impl AsRef<Path>, eg: &str) -> CargoCommand {
+    let file_command = rust_file::load_command(dir, eg);
+    let cargo_toml_command = cargo_toml::load_command(dir, eg);
 
     // Return command
     if let Some(c) = file_command {
@@ -63,11 +65,13 @@ fn run_example(example: &str) -> Result<(), &str> {
 fn main() -> ExitCode {
     let mut exit_code = ExitCode::SUCCESS;
 
-    let default_build = cargo_toml::get_default_build();
+    let dir = cargo_toml::find();
+
+    let default_build = cargo_toml::get_default_build(&dir);
 
     // Load all template examples from files
     let mut examples = vec![];
-    for file in fs::read_dir("examples").expect("Could not find examples directory") {
+    for file in fs::read_dir(join(&dir, "examples")).expect("Could not find examples directory") {
         let file = file.expect("Error reading examples directory").path();
         if let Some(e) = file.extension()
             && e == "rs"
@@ -78,16 +82,16 @@ fn main() -> ExitCode {
                 .to_str()
                 .expect("Error parsing file name");
 
-            let mut c = get_example_command(file_stem);
+            let mut c = get_example_command(&dir, file_stem);
             c.set_default_build_type(&default_build);
-            c.set_required_features(&cargo_toml::load_required_features(file_stem));
+            c.set_required_features(&cargo_toml::load_required_features(&dir, file_stem));
             examples.push(c.as_string());
         }
     }
 
     // Substitute all template arguments
     let mut template_args = HashMap::new();
-    cargo_toml::load_args(&mut template_args);
+    cargo_toml::load_args(&dir, &mut template_args);
     command_line::load_args(&mut template_args);
 
     for (a, options) in &template_args {
