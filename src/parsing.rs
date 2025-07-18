@@ -8,12 +8,9 @@ pub fn parse_string_if_quoted(s: &str) -> String {
         let mut output = String::new();
         while let Some(c) = s.next() {
             if c == '\\' {
-                output = format!(
-                    "{output}{}",
-                    s.next().expect("String cannot end with a backslash")
-                );
+                output.push(s.next().expect("String cannot end with a backslash"));
             } else {
-                output = format!("{output}{c}");
+                output.push(c);
             }
         }
         output
