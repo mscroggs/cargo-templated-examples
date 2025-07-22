@@ -30,7 +30,10 @@ struct RunOutcomes {
 impl RunOutcomes {
     /// Create new
     fn new() -> Self {
-        Self { passes: 0, fails: 0 }
+        Self {
+            passes: 0,
+            fails: 0,
+        }
     }
 
     /// Add
