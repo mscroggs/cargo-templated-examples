@@ -21,6 +21,28 @@ use std::{
     process::{Command, ExitCode},
 };
 
+/// Number of passing and failing examples
+struct RunOutcomes {
+    passes: usize,
+    fails: usize,
+}
+
+impl RunOutcomes {
+    /// Create new
+    fn new() -> Self {
+        Self {
+            passes: 0,
+            fails: 0,
+        }
+    }
+
+    /// Add
+    fn add(&mut self, other: &RunOutcomes) {
+        self.passes += other.passes;
+        self.fails += other.fails;
+    }
+}
+
 /// Get example command for a file
 fn get_example_command(dir: &impl AsRef<Path>, eg: &str) -> CargoCommand {
     let file_command = rust_file::load_command(dir, eg);
@@ -62,21 +84,19 @@ fn run_example(example: &str) -> Result<(), &str> {
 }
 
 /// Run all examples in a directory
-fn run_all_examples(dir: &Path, package: Option<String>) -> ExitCode {
-    let mut exit_code = ExitCode::SUCCESS;
+fn run_all_examples(dir: &Path, package: Option<String>) -> RunOutcomes {
+    let mut outcomes = RunOutcomes::new();
 
     if let Some(w) = cargo_toml::get_workspace(&dir) {
         for c in w {
-            if run_all_examples(&join(&dir, &c), Some(c)) == ExitCode::FAILURE {
-                exit_code = ExitCode::FAILURE
-            }
+            outcomes.add(&run_all_examples(&join(&dir, &c), Some(c)));
         }
     }
 
     let default_build = cargo_toml::get_default_build(&dir);
 
     if !join(&dir, "examples").is_dir() {
-        return exit_code;
+        return outcomes;
     }
 
     // Load all template examples from files
@@ -128,13 +148,30 @@ fn run_all_examples(dir: &Path, package: Option<String>) -> ExitCode {
         println!("RUNNING {c}");
         println!();
         if run_example(c).is_err() {
-            exit_code = ExitCode::FAILURE;
+            outcomes.fails += 1;
+        } else {
+            outcomes.passes += 1;
         }
     }
-    exit_code
+    outcomes
 }
 
 fn main() -> ExitCode {
     let dir = cargo_toml::find();
-    run_all_examples(&dir, None)
+    let outcomes = run_all_examples(&dir, None);
+
+    println!();
+    println!("SUMMARY");
+    if outcomes.passes + outcomes.fails == 0 {
+        println!("Couldn't find any examples to run.");
+        ExitCode::FAILURE
+    } else {
+        println!("{} examples ran successfully.", outcomes.passes);
+        if outcomes.fails == 0 {
+            ExitCode::SUCCESS
+        } else {
+            println!("{} examples encountered errors.", outcomes.fails);
+            ExitCode::FAILURE
+        }
+    }
 }
