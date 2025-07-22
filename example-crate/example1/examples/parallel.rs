@@ -1,4 +1,6 @@
-use example::print_mpi_info;
+//? mpirun -n {{NPROCESSES}}
+
+use example1::print_mpi_info;
 use mpi::{environment::Universe, topology::Communicator};
 
 fn main() {

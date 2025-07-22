@@ -61,12 +61,23 @@ fn run_example(example: &str) -> Result<(), &str> {
     }
 }
 
-fn main() -> ExitCode {
+/// Run all examples in a directory
+fn run_all_examples(dir: &Path, package: Option<String>) -> ExitCode {
     let mut exit_code = ExitCode::SUCCESS;
 
-    let dir = cargo_toml::find();
+    if let Some(w) = cargo_toml::get_workspace(&dir) {
+        for c in w {
+            if run_all_examples(&join(&dir, &c), Some(c)) == ExitCode::FAILURE {
+                exit_code = ExitCode::FAILURE
+            }
+        }
+    }
 
     let default_build = cargo_toml::get_default_build(&dir);
+
+    if !join(&dir, "examples").is_dir() {
+        return exit_code;
+    }
 
     // Load all template examples from files
     let mut examples = vec![];
@@ -84,6 +95,9 @@ fn main() -> ExitCode {
             let mut c = get_example_command(&dir, file_stem);
             c.set_default_build_type(&default_build);
             c.set_required_features(&cargo_toml::load_required_features(&dir, file_stem));
+            if let Some(p) = &package {
+                c.set_package(p);
+            }
             examples.push(c.as_string());
         }
     }
@@ -118,4 +132,9 @@ fn main() -> ExitCode {
         }
     }
     exit_code
+}
+
+fn main() -> ExitCode {
+    let dir = cargo_toml::find();
+    run_all_examples(&dir, None)
 }

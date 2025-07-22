@@ -34,6 +34,7 @@ pub struct CargoCommand {
     args: Vec<(String, String)>,
     features: Vec<String>,
     build: BuildType,
+    package: Option<String>,
 }
 
 impl CargoCommand {
@@ -45,6 +46,7 @@ impl CargoCommand {
             args: vec![],
             features: vec![],
             build: BuildType::Default,
+            package: None,
         }
     }
 
@@ -69,6 +71,9 @@ impl CargoCommand {
             BuildType::Default => {
                 panic!("Cannot use default as run mode.");
             }
+        }
+        if let Some(p) = &self.package {
+            c.push_str(&format!(" --package {p}"));
         }
         c
     }
@@ -110,12 +115,17 @@ impl CargoCommand {
         }
     }
 
+    pub fn set_package(&mut self, package: &str) {
+        self.package = Some(String::from(package));
+    }
+
     /// Create from a string
     pub fn from_str(c: &str, example_name: &str) -> CargoCommand {
         let mut features = vec![];
         let mut args = vec![];
         let mut build = BuildType::Default;
         let mut c = c.split(" ");
+        let mut package = None;
         let run = String::from(c.next().expect("Command cannot be empty"));
         while let Some(i) = c.next() {
             match i {
@@ -132,6 +142,12 @@ impl CargoCommand {
                     build = BuildType::Profile(String::from(
                         c.next().expect("Profile cannot be blank"),
                     ));
+                }
+                "--package" => {
+                    if package.is_some() {
+                        panic!("Cannot set package twice");
+                    }
+                    package = Some(String::from(c.next().expect("Package cannot be blank")));
                 }
                 "--features" => {
                     // TODO: tidy this up
@@ -155,6 +171,7 @@ impl CargoCommand {
             args,
             features,
             build,
+            package,
         }
     }
 }

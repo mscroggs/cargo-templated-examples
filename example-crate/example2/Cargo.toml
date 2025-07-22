@@ -1,0 +1,20 @@
+[features]
+one = []
+two = []
+
+[package]
+name = "example2"
+version = "0.0.0"
+edition = "2024"
+authors = ["Matthew Scroggs <rust@mscroggs.co.uk>",]
+description = "crate for testing cargo-templated-examples"
+license = "MIT"
+homepage = "https://github.com/mscroggs/cargo-templated-examples"
+repository = "https://github.com/mscroggs/cargo-templated-examples"
+readme = "../README.md"
+
+[[example]]
+name = "debug"
+
+[package.metadata.example.debug.templated-examples]
+build = "debug"

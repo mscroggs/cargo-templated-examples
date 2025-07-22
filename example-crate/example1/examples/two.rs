@@ -1,6 +1,6 @@
 //? run --features "{{FEATURE}}" --release
 
-use example::j;
+use example1::j;
 
 fn main() {
     assert_eq!(j(), 2);

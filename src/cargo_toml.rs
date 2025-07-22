@@ -76,6 +76,14 @@ pub fn get_default_build(dir: &impl AsRef<Path>) -> BuildType {
     BuildType::Release
 }
 
+/// Get default build type
+pub fn get_workspace(dir: &impl AsRef<Path>) -> Option<Vec<String>> {
+    if let Some(w) = cargo_toml(dir).workspace {
+        return Some(w.members);
+    }
+    None
+}
+
 /// Load required features for an example
 pub fn load_required_features(dir: &impl AsRef<Path>, eg: &str) -> Vec<String> {
     for e in cargo_toml(dir).example {
