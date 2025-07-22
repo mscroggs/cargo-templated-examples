@@ -1,6 +1,6 @@
 //? run --features "one"
 
-use example::i;
+use example1::i;
 
 fn main() {
     assert_eq!(i(), 1);

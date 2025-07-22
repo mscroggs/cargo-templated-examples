@@ -1,0 +1,62 @@
+[features]
+one = []
+two = []
+
+[package]
+name = "example1"
+version = "0.0.0"
+edition = "2024"
+authors = ["Matthew Scroggs <rust@mscroggs.co.uk>",]
+description = "crate for testing cargo-templated-examples"
+license = "MIT"
+homepage = "https://github.com/mscroggs/cargo-templated-examples"
+repository = "https://github.com/mscroggs/cargo-templated-examples"
+readme = "../README.md"
+
+[dependencies]
+mpi = "0.8.*"
+
+[package.metadata.templated-examples]
+NPROCESSES = ["2", "4"]
+build = "debug"
+
+[[example]]
+name = "debug"
+
+[[example]]
+name = "one"
+
+[[example]]
+name = "one_required_feature"
+required-features = ["one"]
+
+[[example]]
+name = "one_set_in_cargo"
+
+[package.metadata.example.one_set_in_cargo.templated-examples]
+command = "run --features \"one\""
+
+[[example]]
+name = "parallel"
+
+[[example]]
+name = "release"
+
+[[example]]
+name = "release_set_in_cargo"
+
+[package.metadata.example.release_set_in_cargo.templated-examples]
+build = "release"
+
+[[example]]
+name = "two"
+
+[[example]]
+name = "zero"
+
+[[example]]
+name = "parallel_set_in_cargo"
+
+[package.metadata.example.parallel_set_in_cargo.templated-examples]
+command = "mpirun -n {{NPROCESSES}}"
+
