@@ -62,11 +62,25 @@ fn run_example(example: &str) -> Result<(), &str> {
 }
 
 fn main() -> ExitCode {
-    let mut exit_code = ExitCode::SUCCESS;
-
     let dir = cargo_toml::find();
+    run_all_examples(&dir)
+}
 
+fn run_all_examples(dir: &Path) -> ExitCode {
+    let mut exit_code = ExitCode::SUCCESS;
     let default_build = cargo_toml::get_default_build(&dir);
+
+    if let Some(w) = cargo_toml::get_workspace(&dir) {
+        for c in w {
+            if run_all_examples(&join(&dir, &c)) == ExitCode::FAILURE {
+                exit_code = ExitCode::FAILURE
+            }
+        }
+    }
+
+    if !join(&dir, "examples").is_dir() {
+        return exit_code;
+    }
 
     // Load all template examples from files
     let mut examples = vec![];
