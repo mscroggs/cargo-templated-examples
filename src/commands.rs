@@ -144,12 +144,10 @@ impl CargoCommand {
                     ));
                 }
                 "--package" => {
-                    if package != None {
+                    if package.is_some() {
                         panic!("Cannot set package twice");
                     }
-                    package = Some(String::from(
-                        c.next().expect("Package cannot be blank"),
-                    ));
+                    package = Some(String::from(c.next().expect("Package cannot be blank")));
                 }
                 "--features" => {
                     // TODO: tidy this up

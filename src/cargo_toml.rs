@@ -78,8 +78,7 @@ pub fn get_default_build(dir: &impl AsRef<Path>) -> BuildType {
 
 /// Get default build type
 pub fn get_workspace(dir: &impl AsRef<Path>) -> Option<Vec<String>> {
-    if let Some(w) = cargo_toml(dir).workspace
-    {
+    if let Some(w) = cargo_toml(dir).workspace {
         return Some(w.members);
     }
     None
