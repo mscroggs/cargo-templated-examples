@@ -166,11 +166,19 @@ fn main() -> ExitCode {
         println!("Couldn't find any examples to run.");
         ExitCode::FAILURE
     } else {
-        println!("{} examples ran successfully.", outcomes.passes);
+        println!(
+            "{} example{} ran successfully.",
+            outcomes.passes,
+            if outcomes.passes == 1 { "" } else { "s" }
+        );
         if outcomes.fails == 0 {
             ExitCode::SUCCESS
         } else {
-            println!("{} examples encountered errors.", outcomes.fails);
+            println!(
+                "{} example{} encountered errors.",
+                outcomes.fails,
+                if outcomes.fails == 1 { "" } else { "s" }
+            );
             ExitCode::FAILURE
         }
     }
