@@ -3,7 +3,7 @@ strict = []
 
 [package]
 name = "cargo-templated-examples"
-version = "0.3.2"
+version = "0.3.2-dev"
 edition = "2024"
 authors = ["Matthew Scroggs <rust@mscroggs.co.uk>"]
 description = "Cargo extension for templated running of example."
