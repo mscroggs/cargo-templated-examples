@@ -103,7 +103,7 @@ impl CargoCommand {
 
     pub fn add_features_if_available(&mut self, features: &[String]) {
         for f in features {
-            if self.available_features.contains(f) {
+            if !self.features.contains(f) && self.available_features.contains(f) {
                 self.features.push(f.to_string());
             }
         }
