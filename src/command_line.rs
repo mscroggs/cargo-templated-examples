@@ -10,9 +10,7 @@ pub struct SpecialArgs {
 
 impl SpecialArgs {
     fn new() -> Self {
-        Self {
-            features: vec![],
-        }
+        Self { features: vec![] }
     }
 }
 

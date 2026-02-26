@@ -96,7 +96,11 @@ pub fn load_required_features(dir: &impl AsRef<Path>, eg: &str) -> Vec<String> {
 
 /// Load available features for a crate
 pub fn load_available_features(dir: &impl AsRef<Path>) -> Vec<String> {
-    cargo_toml(dir).features.iter().map(|i| i.0.clone()).collect::<Vec<_>>()
+    cargo_toml(dir)
+        .features
+        .iter()
+        .map(|i| i.0.clone())
+        .collect::<Vec<_>>()
 }
 
 /// Load command from Cargo.toml section [package.metedata.example.{{eg}}.templated-examples]
