@@ -47,7 +47,7 @@ jobs:
       - name: Run on example crate
         run: |
           cd example-crate
-          cargo templated-examples FEATURE two --features "three"
+          cargo templated-examples FEATURE two --features "three,five"
 
   check-dependencies:
     name: Check dependencies

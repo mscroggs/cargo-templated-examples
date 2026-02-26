@@ -33,6 +33,7 @@ pub struct CargoCommand {
     example_name: String,
     args: Vec<(String, String)>,
     features: Vec<String>,
+    available_features: Vec<String>,
     build: BuildType,
     package: Option<String>,
 }
@@ -45,6 +46,7 @@ impl CargoCommand {
             example_name,
             args: vec![],
             features: vec![],
+            available_features: vec![],
             build: BuildType::Default,
             package: None,
         }
@@ -97,6 +99,19 @@ impl CargoCommand {
                 self.example_name
             );
         }
+    }
+
+    pub fn add_features_if_available(&mut self, features: &[String]) {
+        for f in features {
+            if self.available_features.contains(f) {
+                self.features.push(f.to_string());
+            }
+        }
+    }
+
+    /// Set the available features
+    pub fn set_available_features(&mut self, features: &[String]) {
+        self.available_features = features.to_vec();
     }
 
     /// Set required features
@@ -170,6 +185,7 @@ impl CargoCommand {
             example_name,
             args,
             features,
+            available_features: vec![],
             build,
             package,
         }
