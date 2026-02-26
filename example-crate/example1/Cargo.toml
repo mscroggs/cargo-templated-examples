@@ -1,6 +1,8 @@
 [features]
 one = []
 two = []
+three = []
+four = []
 
 [package]
 name = "example1"
