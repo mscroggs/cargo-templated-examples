@@ -17,3 +17,6 @@ name = "debug"
 
 [package.metadata.example.debug.templated-examples]
 build = "debug"
+
+[package.metadata.example.fail.templated-examples]
+skip = true

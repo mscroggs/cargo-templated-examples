@@ -98,6 +98,21 @@ pub fn load_required_features(dir: &impl AsRef<Path>, eg: &str) -> Vec<String> {
     vec![]
 }
 
+/// Check if this example should be skipped
+pub fn check_for_skip(dir: &impl AsRef<Path>, eg: &str) -> bool {
+    if let Some(p) = cargo_toml(dir).package
+        && let Some(m) = p.metadata
+        && let Some(e) = m.get("example")
+        && let Some(ex) = e.get(eg)
+        && let Some(d) = ex.get("templated-examples")
+        && let Some(skip) = d.get("skip")
+    {
+        skip.as_bool().expect("skip must be a bool")
+    } else {
+        false
+    }
+}
+
 /// Load available features for a crate
 pub fn load_available_features(dir: &impl AsRef<Path>) -> Vec<String> {
     cargo_toml(dir)

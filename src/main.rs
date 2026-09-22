@@ -125,7 +125,9 @@ fn run_all_examples(dir: &Path, package: Option<String>) -> RunOutcomes {
             }
 
             example_names.push(String::from(c.example_name()));
-            examples.push(c.as_string());
+            if !cargo_toml::check_for_skip(&dir, c.example_name()) {
+                examples.push(c.as_string());
+            }
         }
     }
 
@@ -145,7 +147,9 @@ fn run_all_examples(dir: &Path, package: Option<String>) -> RunOutcomes {
             }
 
             example_names.push(name);
-            examples.push(c.as_string())
+            if !cargo_toml::check_for_skip(&dir, c.example_name()) {
+                examples.push(c.as_string())
+            }
         }
     }
 
