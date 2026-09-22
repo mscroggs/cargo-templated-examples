@@ -1,9 +1,5 @@
-[features]
-one = []
-two = []
-
 [package]
-name = "example2"
+name = "example3"
 version = "0.0.0"
 edition = "2024"
 authors = ["Matthew Scroggs <rust@mscroggs.co.uk>",]
@@ -13,10 +9,5 @@ repository = "https://github.com/mscroggs/cargo-templated-examples"
 readme = "../README.md"
 
 [[example]]
-name = "debug"
-
-[package.metadata.example.debug.templated-examples]
-build = "debug"
-
-[package.metadata.example.fail.templated-examples]
-skip = true
+name = "this_example"
+path = "examples/subexamples/this_example.rs"

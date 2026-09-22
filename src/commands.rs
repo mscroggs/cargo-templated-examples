@@ -52,6 +52,11 @@ impl CargoCommand {
         }
     }
 
+    /// Get example name
+    pub fn example_name(&self) -> &str {
+        &self.example_name
+    }
+
     /// Convert command to string
     pub fn as_string(&self) -> String {
         let mut c = format!("cargo {}", self.run);

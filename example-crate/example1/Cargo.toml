@@ -12,7 +12,6 @@ edition = "2024"
 authors = ["Matthew Scroggs <rust@mscroggs.co.uk>",]
 description = "crate for testing cargo-templated-examples"
 license = "MIT"
-homepage = "https://github.com/mscroggs/cargo-templated-examples"
 repository = "https://github.com/mscroggs/cargo-templated-examples"
 readme = "../README.md"
 
