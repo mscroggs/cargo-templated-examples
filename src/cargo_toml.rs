@@ -33,6 +33,10 @@ fn cargo_toml(dir: &impl AsRef<Path>) -> Manifest {
     .expect("Could not parse Cargo.toml")
 }
 
+pub fn all_examples(dir: &impl AsRef<Path>) -> Vec<cargo_toml::Product> {
+    cargo_toml(dir).example
+}
+
 /// Load template arguments from the package.metadata.templated-examples section of Cargo.toml
 pub fn load_args(dir: &impl AsRef<Path>, args: &mut HashMap<String, Vec<String>>) {
     if let Some(p) = cargo_toml(dir).package
