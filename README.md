@@ -80,6 +80,16 @@ build = "debug"
 will set the default build type to debug. If this value is not set, the default build type
 will be release.
 
+### Skipping an example
+If you want cargo-templated-examples to skip an example when running, you can set `skip` to
+`true` in the `package.metadata.example.<EXAMPLE_NAME>.templated-examples` section of Cargo.toml. For example, adding
+```toml
+[package.metadata.example.intro_demo.templated-examples]
+skip = true
+```
+will make cargo-templated-examples skip the `intro_demo` example.
+
+
 ### Example
 An example of the usage of cargo-templated-example can be found in the 
 [example-crate](https://github.com/mscroggs/cargo-templated-examples/tree/main/example-crate)
